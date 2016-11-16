@@ -1,0 +1,151 @@
+---
+title: "Walkthough Analysis 2016/02/10"
+author: "Ben Hicks"
+date: "10 February 2016"
+output: html_document
+---
+
+#### Ben Hicks - 10 Feb 2016
+
+
+### Methodology
+
+Walkthrough conducted on 10 February 2016 by Kate Cunich and Ben Hicks. The following questions were data was collected from each class:
+
+**Context of Lesson**
+
+Question | Description / Method
+--------|-----------------------------
+period | The period of the lesson visited (1 - 6)
+room | Room visited
+year level | The year level visited. An answer of "3.5" indicates a mixed class of year 3 and year 4 students
+number of students | how many students in the class
+lesson time | The time of the lesson, designated as beginning (B), middle (M) or end (E). Beginning was deemed to be anytime in the first 15 minutes (allowing for movement to class) and end was anytime during the last 10 minutes
+
+**What the students were doing**
+
+These categories are *not* exclusive. Students could be doing a number of these at once. For instance class discussion with heavy scaffolding from the teacher might be classed as *direct instruction* as well as *discussion*.
+
+Question | Description / Method
+--------|-----------------------------
+direct instruction | Students were recieving direct instruction from the teacher, or the teacher was modelling work, or similar.
+discussing | Students were talking *about what they were learning* or working on.
+reading / viewing | Students were reading a text, viewing media, or similar. This also includes listening to a recording.
+groupwork | Students were working on a task in groups of two or more. 
+independent work | Students were working on a task by themselves. 
+
+**Learning Intentions and Success Criteria**
+
+Question | Description / Method
+--------|-----------------------------
+LI visible | The learning intentions are visible, either on the board, on a document, or online. If online students needed to be able to access / have accessed it.
+SC visible | The success criteria are visible, either on the board, on a document, or online. If online students needed to be able to access / have accessed it.
+
+**Student understanding of learning process**
+
+This is both the most subjective and important measure of the walkthrough. As such each question was asked to at least 4 students, 2 each for the staff performing the walkthrough. After exiting the class, a short discussion would rate the responses on a scale of 0 - 2, 2 being a *good understanding*, 1 being *some idea*, and 0 being *struggling to understand*. The exact questions would change depending on the student, year level, content, but the goal was to get students to explain what they are learning, and what success in this process would look like. Being a small school it is helpful knowing the students and this was taken into account when evaluating the student responses.
+
+Question | Description / Method
+--------|-----------------------------
+learning understanding | Questions such as *what are you learning today?* were asked, and students prompted to explain what they were learning about. Scored on a scale of 0 - 2.
+success understanding | Questions such as *how do you know when you understand it?* or *what do you hope to get out of the lesson?* were asked. The aim was to prompt students into explaining how successful understanding would be achieved. Scored on a scale of 0 - 2. 
+
+### Results
+
+Anecdotal observations of Kate and myself were that there was a pleasing variety of activities happening in classrooms across the school. Students were, in the vast majority, engaged and focused in class. 
+
+```{r echo=FALSE} 
+# setting up library's and parameters
+suppressPackageStartupMessages(library(googleVis))
+op <- options(gvis.plot.tag='chart')
+# reading in data, renaming columns
+wtd01 <- read.csv("Walkthrough.2016.02.10.csv")
+names(wtd01) <- c('period','room','year.level','number.of.students','lesson.time','direct.instruction','discussing','reading..viewing','groupwork','independent.work','LI.visible','SC.visible','learning.understanding','success.understanding')
+```
+
+Summary data | Total
+-------|----------
+Classes visited: | `r length(wtd01[,1])`
+ - - beginning of lesson | `r sum(wtd01$lesson.time == "B")`
+ - - middle of lesson | `r sum(wtd01$lesson.time == "M")`
+ - - end of lesson | `r sum(wtd01$lesson.time == "E")`
+Students observed: | `r sum(wtd01$number.of.students)`
+ - - Primary | `r sum(wtd01$number.of.students) - sum(subset(wtd01, wtd01$year.level %in% c(7,8,9,10,11,12))$number.of.students)`
+ - - Secondary | `r sum(subset(wtd01, wtd01$year.level %in% c(7,8,9,10,11,12))$number.of.students)`
+
+
+``` {r echo = FALSE, results = "asis", comment = NA}
+# Overall activity breakdown
+library(rCharts)
+rd1 <- data.frame(Activity = names(wtd01[6:10]), Rate = sapply(wtd01[6:10], mean))
+rd1$Activity <- gsub("reading..viewing","reading or viewing",rd1$Activity)
+rd1$Activity <- gsub("\\."," ",rd1$Activity)
+rd1 <- rd1[order(rd1$Activity),]
+p2 <- nPlot(Rate ~ Activity,
+            data = rd1,
+            type = 'multiBarChart')
+p2$chart(color = c('brown','blue','green','#444444','#aa2288'))
+p2$templates$script <- "http://timelyportfolio.github.io/rCharts_nvd3_templates/chartWithTitle.html"
+p2$set(title = "Activity breakdown")
+p2$yAxis(tickFormat = "#!d3.format('%')!#")
+p2$print('iframe',include_assets = TRUE)
+
+
+```
+
+\n
+
+``` {r echo = FALSE, results = "asis", comment = NA}
+# Activity breakdown on time of lesson
+library(rCharts)
+
+
+bdat <- subset(wtd01, wtd01$lesson.time == "B", select = 6:10)
+bmean <- data.frame(lesson.time = "Beginning", lapply(bdat, mean))
+mdat <- subset(wtd01, wtd01$lesson.time == "M", select = 6:10)
+mmean <- data.frame(lesson.time = "Middle", lapply(mdat, mean))
+edat <- subset(wtd01, wtd01$lesson.time == "E", select = 6:10)
+emean <- data.frame(lesson.time = "End", lapply(edat, mean))
+
+bdat <- data.frame(lesson.time = "Beginning",
+                   Activity = names(bmean[2:6]),
+                   Rate = as.numeric(bmean[1,2:6])
+)
+mdat <- data.frame(lesson.time = "Middle",
+                   Activity = names(mmean[2:6]),
+                   Rate = as.numeric(mmean[1,2:6])
+)
+edat <- data.frame(lesson.time = "End",
+                   Activity = names(emean[2:6]),
+                   Rate = as.numeric(emean[1,2:6])
+)
+
+
+temp <- merge(bdat,mdat, all = TRUE)
+lt.split.act <- merge(temp,edat, all = TRUE)
+lt.split.act$Activity <- gsub("reading..viewing","reading or viewing",lt.split.act$Activity)
+lt.split.act$Activity <- gsub("\\."," ",lt.split.act$Activity)
+lt.split.act.plot <- nPlot(Rate ~ Activity, group = 'lesson.time',
+                       type = 'multiBarChart',
+                       data = lt.split.act)
+lt.split.act.plot$templates$script <- "http://timelyportfolio.github.io/rCharts_nvd3_templates/chartWithTitle.html"
+lt.split.act.plot$set(title = "Activity breakdown based on time of lesson")
+lt.split.act.plot$yAxis(tickFormat = "#!d3.format('%')!#")
+
+lt.split.act.plot$print('iframesrc',include_assets = TRUE)
+```
+
+
+``` {r echo = FALSE, results = "asis", comment = NA}
+# Overall understanding
+library(rCharts)
+rd <- data.frame(Question = c("Learning", "Success"), Rate = c(mean(wtd01$learning.understanding)/2,mean(wtd01$success.understanding)/2))
+p1 <- nPlot(Rate ~ Activity,
+            data = rd,
+            type = 'multiBarChart')
+p1$templates$script <- "http://timelyportfolio.github.io/rCharts_nvd3_templates/chartWithTitle.html"
+p1$set(title = "Overall learning and success understanding")
+p1$print('iframe',include_assets = TRUE)
+
+
+```

@@ -1,0 +1,25 @@
+{
+    "contents" : "",
+    "created" : 1455402081849.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "5D5E49DB",
+    "lastKnownWriteTime" : 176093659229,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "jzmceertwt",
+        "caption" : "wtd01",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=wtd01&cache_key=jzmceertwt",
+        "displayedObservations" : 28,
+        "environment" : "",
+        "object" : "wtd01",
+        "totalObservations" : 28,
+        "variables" : 14
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "type" : "r_dataframe"
+}

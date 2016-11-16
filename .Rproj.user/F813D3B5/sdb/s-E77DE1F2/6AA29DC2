@@ -1,0 +1,18 @@
+{
+    "contents" : "# Scrap code from rmarkdown\n\n### GoogleVis version:\n\n``` {r echo = FALSE, results = \"asis\"}\nd1 <- data.frame(Activity = names(wtd01[6:10]), Rate = sapply(wtd01[6:10], mean))\nd1$Activity <- gsub(\"reading..viewing\",\"reading or viewing\",d1$Activity)\nd1$Activity <- gsub(\"\\\\.\",\" \",d1$Activity)\nM <- gvisColumnChart(d1,\n                     options = list(title='Student Activity',\n                                    vAxis=\"{format:'#,###%'}\",\n                                    legend = 'none'\n                     ))\nplot(M)\n```",
+    "created" : 1455314301375.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "36074471",
+    "id" : "6AA29DC2",
+    "lastKnownWriteTime" : 1455315980,
+    "path" : "~/Documents/Oxley-Work/Data/Analysis/Walkthrough/code-scraps.R",
+    "project_path" : "code-scraps.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

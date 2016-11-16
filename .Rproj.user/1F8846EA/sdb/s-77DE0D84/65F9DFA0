@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "---\ntitle: \"Walkthough Analysis - Nitty Gritty\"\nauthor: \"Ben Hicks\"\noutput: html_document\n---\n\nDate: `r Sys.Date()`\n\nThis document is an informal collection of some of the details of the walkthroughs to date. \n\n\n\n```{r echo=FALSE} \n# setting up library's and parameters\nsuppressPackageStartupMessages(library(googleVis))\nsuppressPackageStartupMessages(library(plyr))\nop <- options(gvis.plot.tag='chart')\n\n# reading in data, renaming columns\nd0 <- data.frame(read.csv(\"Walkthrough.2016.02.10.csv\"), \n                 Date = \"2016-02-10\")\nd1 <- data.frame(read.csv(\"Walkthrough.2016.06.08.csv\"),\n                 Date = \"2016-06-08\")\nd2 <- data.frame(read.csv(\"Walkthrough.2016.07.28.csv\"),\n                 Date = \"2016-07-28\")\n\n# merging data\nd <- rbind(d0,d1)\nd <- rbind(d,d2)\nwtd <- d\nnames(wtd) <- c('period','room','year.level','number.of.students','lesson.time','direct.instruction','discussing','reading..viewing','groupwork','independent.work','LI.visible','SC.visible','learning.understanding','success.understanding','date')\n\ntimeSeries <- ddply(wtd, ~date, summarise,\n                    LI = mean(LI.visible),\n                    SC = mean(SC.visible),\n                    Learning.Understanding = mean(learning.understanding),\n                    Success.Understanding = mean(success.understanding))\ntimeSeries$date <- as.Date(timeSeries$date, \"%Y-%m-%d\")\n```\n\n* `r length(wtd$period)` lessons observed so far in 2016.\n* LI's visible `r round(100*mean(wtd$LI.visible))`% of the time and SC's visible `r round(100*mean(wtd$SC.visible))`% of the time\n* Learning Understand averaged a score of `r round(50*mean(wtd$learning.understanding))`% and Success Understanding a score of `r round(50*mean(wtd$success.understanding))`%.\n\n### Summary of activity:\n\n``` {r echo = FALSE}\nlibrary(ggplot2)\nact.dat <- data.frame(\n  Activity = c(\"Direct Instruction\", \"Discussion\", \"Reading / Viewing\", \"Group Work\", \"Independent Work\"),\n  Frequency = c(sum(wtd$direct.instruction),\n                sum(wtd$discussing),\n                sum(wtd$reading..viewing), \n                sum(wtd$groupwork), \n                sum(wtd$independent.work))\n)\nggplot(act.dat, aes(x = Activity, y = Frequency)) + geom_bar(stat = \"Identity\")\n\n```\n\n### Impact of LI, SC by lear level.\n\n``` {r echo = FALSE}\nsuppressPackageStartupMessages(library(randomForest))\n\nwtd.adj <- dplyr::mutate(wtd, Understanding = wtd$learning.understanding + wtd$success.understanding)\nwtd.adj <- subset(wtd.adj, select = c(period,room,year.level,number.of.students,lesson.time,direct.instruction,discussing, reading..viewing, groupwork, independent.work, LI.visible, SC.visible, date, Understanding))\n\n\nstage6 <- wtd.adj[wtd.adj$year.level %in% c(11,12),]\nstage5 <- wtd.adj[wtd.adj$year.level %in% c(9,10),]\nstage4 <- wtd.adj[wtd.adj$year.level %in% c(7,8),]\nstage3 <- wtd.adj[wtd.adj$year.level %in% c(5,6),]\nstage2 <- wtd.adj[wtd.adj$year.level %in% c(3,4),]\nstage1 <- wtd.adj[wtd.adj$year.level %in% c(0,1, \"K\"),]\n\n# Random forest method\nset.seed(1234)\ninfluence_all <- randomForest(Understanding ~ ., data = wtd.adj)\nvarImpPlot(influence_all)\ninfluence_stage4 <- randomForest(Understanding ~ ., data = stage4)\nvarImpPlot(influence_stage4)\ninfluence_stage5 <- randomForest(Understanding ~ ., data = stage5)\nvarImpPlot(influence_stage5)\ninfluence_stage6 <- randomForest(Understanding ~ ., data = stage6)\nvarImpPlot(influence_stage6)\n\n```\n\n\n",
+    "created" : 1470794629335.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2624373031",
+    "id" : "65F9DFA0",
+    "lastKnownWriteTime" : 1470803565,
+    "last_content_update" : 1470803565984,
+    "path" : "~/Documents/R-stuff/Walkthrough/Walkthrough - Nitty Gritty.Rmd",
+    "project_path" : "Walkthrough - Nitty Gritty.Rmd",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

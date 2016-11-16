@@ -1,0 +1,25 @@
+{
+    "contents" : "",
+    "created" : 1455330126114.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "3A46299D",
+    "lastKnownWriteTime" : 459561500771,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "ait3sgx6qh",
+        "caption" : "lt.split.act",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=lt.split.act&cache_key=ait3sgx6qh",
+        "displayedObservations" : "15",
+        "environment" : "",
+        "object" : "lt.split.act",
+        "totalObservations" : "15",
+        "variables" : "3"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "type" : "r_dataframe"
+}

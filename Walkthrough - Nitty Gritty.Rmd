@@ -1,0 +1,90 @@
+---
+title: "Walkthough Analysis - Nitty Gritty"
+author: "Ben Hicks"
+output: html_document
+---
+
+Date: `r Sys.Date()`
+
+This document is an informal collection of some of the details of the walkthroughs to date. 
+
+
+
+```{r echo=FALSE} 
+# setting up library's and parameters
+suppressPackageStartupMessages(library(googleVis))
+suppressPackageStartupMessages(library(plyr))
+op <- options(gvis.plot.tag='chart')
+
+# reading in data, renaming columns
+d0 <- data.frame(read.csv("Walkthrough.2016.02.10.csv"), 
+                 Date = "2016-02-10")
+d1 <- data.frame(read.csv("Walkthrough.2016.06.08.csv"),
+                 Date = "2016-06-08")
+d2 <- data.frame(read.csv("Walkthrough.2016.07.28.csv"),
+                 Date = "2016-07-28")
+
+# merging data
+d <- rbind(d0,d1)
+d <- rbind(d,d2)
+wtd <- d
+names(wtd) <- c('period','room','year.level','number.of.students','lesson.time','direct.instruction','discussing','reading..viewing','groupwork','independent.work','LI.visible','SC.visible','learning.understanding','success.understanding','date')
+
+timeSeries <- ddply(wtd, ~date, summarise,
+                    LI = mean(LI.visible),
+                    SC = mean(SC.visible),
+                    Learning.Understanding = mean(learning.understanding),
+                    Success.Understanding = mean(success.understanding))
+timeSeries$date <- as.Date(timeSeries$date, "%Y-%m-%d")
+```
+
+* `r length(wtd$period)` lessons observed so far in 2016.
+* LI's visible `r round(100*mean(wtd$LI.visible))`% of the time and SC's visible `r round(100*mean(wtd$SC.visible))`% of the time
+* Learning Understand averaged a score of `r round(50*mean(wtd$learning.understanding))`% and Success Understanding a score of `r round(50*mean(wtd$success.understanding))`%.
+
+### Summary of activity:
+
+``` {r echo = FALSE}
+library(ggplot2)
+act.dat <- data.frame(
+  Activity = c("Direct Instruction", "Discussion", "Reading / Viewing", "Group Work", "Independent Work"),
+  Frequency = c(sum(wtd$direct.instruction),
+                sum(wtd$discussing),
+                sum(wtd$reading..viewing), 
+                sum(wtd$groupwork), 
+                sum(wtd$independent.work))
+)
+ggplot(act.dat, aes(x = Activity, y = Frequency)) + geom_bar(stat = "Identity")
+
+```
+
+### Impact of LI, SC by lear level.
+
+``` {r echo = FALSE}
+suppressPackageStartupMessages(library(randomForest))
+
+wtd.adj <- dplyr::mutate(wtd, Understanding = wtd$learning.understanding + wtd$success.understanding)
+wtd.adj <- subset(wtd.adj, select = c(period,room,year.level,number.of.students,lesson.time,direct.instruction,discussing, reading..viewing, groupwork, independent.work, LI.visible, SC.visible, date, Understanding))
+
+
+stage6 <- wtd.adj[wtd.adj$year.level %in% c(11,12),]
+stage5 <- wtd.adj[wtd.adj$year.level %in% c(9,10),]
+stage4 <- wtd.adj[wtd.adj$year.level %in% c(7,8),]
+stage3 <- wtd.adj[wtd.adj$year.level %in% c(5,6),]
+stage2 <- wtd.adj[wtd.adj$year.level %in% c(3,4),]
+stage1 <- wtd.adj[wtd.adj$year.level %in% c(0,1, "K"),]
+
+# Random forest method
+set.seed(1234)
+influence_all <- randomForest(Understanding ~ ., data = wtd.adj)
+varImpPlot(influence_all)
+influence_stage4 <- randomForest(Understanding ~ ., data = stage4)
+varImpPlot(influence_stage4)
+influence_stage5 <- randomForest(Understanding ~ ., data = stage5)
+varImpPlot(influence_stage5)
+influence_stage6 <- randomForest(Understanding ~ ., data = stage6)
+varImpPlot(influence_stage6)
+
+```
+
+
