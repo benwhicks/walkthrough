@@ -1,30 +1,12 @@
 ---
 title: "Walkthough Analysis - Cumulative"
-author: "Ben Hicks"
-date: "August 2018"
 output: pdf_document
 ---
 
-# Results - Latest
-```{r echo=FALSE, message=FALSE, warning=FALSE} 
-# setting up library's and parameters
+Results of walkthrough conducted during `r wtDate`
+
+``` {r echo = FALSE, message=FALSE, warning=FALSE}
 suppressPackageStartupMessages(library(plyr))
-
-# Column names must be in the following sequence
-col_names <- c('period','room','year.level','number.of.students','lesson.time','direct.instruction','discussing','reading..viewing','groupwork','independent.work','LI.visible','SC.visible','learning.understanding','success.understanding','date','learning.process')
-
-# Need to add new walkthrough data to All.Walkthroughs.csv before running this
-
-wtd <- read.csv("data/All.Walkthroughs.csv")
-wtd$date <- as.Date(wtd$date)
-names(wtd) <- col_names
-
-wtd_today <- wtd[wtd$date == max(wtd$date),]
-```
-
-## Context
-
-``` {r echo = FALSE}
 context <- data.frame(Observations = c("Classes visited:", 
                                        " - beginning of lesson", 
                                        " - middle of lesson", " - end of lesson", 
@@ -52,72 +34,37 @@ context <- data.frame(Observations = c("Classes visited:",
 knitr::kable(context)
 ```
 
-
 ## Student activity
 
-### Overall activity breakdown
-``` {r echo = FALSE, results = "asis", comment = NA}
+``` {r echo = FALSE, comment = NA, message=FALSE, warning=FALSE, fig.height = 2}
+suppressPackageStartupMessages(library(ggplot2))
 # Overall activity breakdown
 rd1 <- data.frame(Activity = names(wtd_today[6:10]), Rate = sapply(wtd_today[6:10], mean))
 rd1$Activity <- gsub("reading..viewing","reading or viewing",rd1$Activity)
 rd1$Activity <- gsub("\\."," ",rd1$Activity)
 rd1 <- rd1[order(rd1$Activity),]
+rd1$Walkthrough <- "Today"
 
+# Cumulative
+rd2 <- data.frame(Activity = names(wtd[6:10]), Rate = sapply(wtd[6:10], mean))
+rd2$Activity <- gsub("reading..viewing","reading or viewing",rd2$Activity)
+rd2$Activity <- gsub("\\."," ",rd1$Activity)
+rd2 <- rd2[order(rd2$Activity),]
+rd2$Walkthrough <- "Cumulative"
+
+rd <- rbind(rd1, rd2)
+
+gbd <- ggplot(data = rd, aes(x = Activity, y = Rate, fill = Walkthrough)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = "Paired") + scale_y_continuous(labels = scales::percent)
+gbd + ggthemes::theme_tufte() + theme(axis.text = element_text(size = 8))
 ```
 
 
 
-### Activity breakdown by time of lesson
-``` {r echo = FALSE, results = "asis", comment = NA}
+
+``` {r echo = FALSE, eval = FALSE, results = "asis", comment = NA, fig.height = 2}
 # Activity breakdown on time of lesson
-bdat <- subset(wtd_today, wtd_today$lesson.time == "B", select = 6:10)
-bmean <- data.frame(lesson.time = "Beginning", lapply(bdat, mean))
-mdat <- subset(wtd_today, wtd_today$lesson.time == "M", select = 6:10)
-mmean <- data.frame(lesson.time = "Middle", lapply(mdat, mean))
-edat <- subset(wtd_today, wtd_today$lesson.time == "E", select = 6:10)
-emean <- data.frame(lesson.time = "End", lapply(edat, mean))
 
-bdat <- data.frame(lesson.time = "Beginning",
-                   Activity = names(bmean[2:6]),
-                   Rate = as.numeric(bmean[1,2:6])
-)
-mdat <- data.frame(lesson.time = "Middle",
-                   Activity = names(mmean[2:6]),
-                   Rate = as.numeric(mmean[1,2:6])
-)
-edat <- data.frame(lesson.time = "End",
-                   Activity = names(emean[2:6]),
-                   Rate = as.numeric(emean[1,2:6])
-)
-
-temp <- merge(bdat,mdat, all = TRUE)
-lt.split.act <- merge(temp,edat, all = TRUE)
-lt.split.act$Activity <- gsub("reading..viewing","reading or viewing",lt.split.act$Activity)
-lt.split.act$Activity <- gsub("\\."," ",lt.split.act$Activity)
-
-```
-
-
-
-# Results - Cumulative
-
-## Student activity
-
-### Overall activity breakdown
-``` {r echo = FALSE, results = "asis", comment = NA}
-# Overall activity breakdown
-rd1 <- data.frame(Activity = names(wtd[6:10]), Rate = sapply(wtd[6:10], mean))
-rd1$Activity <- gsub("reading..viewing","reading or viewing",rd1$Activity)
-rd1$Activity <- gsub("\\."," ",rd1$Activity)
-rd1 <- rd1[order(rd1$Activity),]
-
-```
-
-
-
-### Activity breakdown by time of lesson
-``` {r echo = FALSE, results = "asis", comment = NA}
-# Activity breakdown on time of lesson
+# Currently not used
 suppressPackageStartupMessages(library(rCharts))
 
 bdat <- subset(wtd, wtd$lesson.time == "B", select = 6:10)
@@ -152,7 +99,7 @@ lt.split.act$Activity <- gsub("\\."," ",lt.split.act$Activity)
 The following charts address the questions asked to students, gauging their understanding of the learning process. The scores have been converted to a percentage.
 
 
-``` {r echo = F, warning = F}
+``` {r echo = F, warning = F, fig.height = 2}
 suppressPackageStartupMessages(library(plyr))
 timeSeries <- ddply(wtd, ~date, summarise,
                     LI = mean(LI.visible),
@@ -188,11 +135,12 @@ suppressPackageStartupMessages(library(scales))
 suppressPackageStartupMessages(library(plotly))
 suppressPackageStartupMessages(library(ggthemes))
 ggtime <- ggplot(t, aes(y = value, x = date, color = Measure)) + geom_line() + geom_point()
-ggtime <- ggtime + scale_y_continuous(name = "",labels = percent, limits = c(0,1)) + scale_x_date(name = "", labels = date_format("%b-%y"))
-ggtime <- ggtime + theme_tufte()
+ggtime <- ggtime + scale_y_continuous(name = "",labels = percent, limits = c(0,1)) + scale_x_date(name = "", labels = date_format("%b-%y")) + scale_color_brewer(palette = "Paired")
+ggtime <- ggtime + theme_tufte() + theme(axis.text = element_text(size = 8))
 ggtime
 ```
 
+\pagebreak
 
 # Methodology
 
@@ -242,12 +190,12 @@ success understanding | Questions such as *how do you know when you understand i
 
 Students are assessed on how well they understand the following stages in their current learning process:
 
-1. What am I doing?
+1. What am I learning?
 2. How am I going? (Feedback)
 3. How do I improve? (Feedforward)
 
 Teachers conducting the survey ask 2 students (minimum) in each class and score the class on a 3-point scale. Decimals are allowed and each of the stages above are given equal value of 1-point each. The kind of questions asked depend on the lesson and age of students but a rough guide is as follows:
 
-1. *What are you doing?* Does the student know what they are doing.
+1. *What are you learning?* Does the student know what they are meant to be learning.
 2. *How are you going? How do you know that? What demonstrates this?* Can the student self-assess on their level of understanding. The follow up question in brackets is to get students to answer more than ‘good’, they need to be able to say how they know how they are going
 3. *What do you need to do to improve? What is your learning goal? What do you need to focus on?* Trying to ascertain if the student knows how to improve. This answer should be more specific than work harder or do more of this.
