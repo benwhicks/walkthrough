@@ -1,5 +1,8 @@
-*.pdf
+*.pd
+!Sample.Report.pdff
 *.csv
+!Sample.All.Walkthroughs.csv
 *.html
 *.doc
 *.docx
+.Rproj.user

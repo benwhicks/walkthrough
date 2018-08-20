@@ -9,7 +9,6 @@ Date: `r Sys.Date()`
 This document is an informal collection of some of the details of the walkthroughs to date. 
 
 
-
 ```{r echo=FALSE} 
 # setting up library's and parameters
 suppressPackageStartupMessages(library(googleVis))

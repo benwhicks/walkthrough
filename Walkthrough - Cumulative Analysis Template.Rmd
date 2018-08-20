@@ -1,0 +1,253 @@
+---
+title: "Walkthough Analysis - Cumulative"
+author: "Ben Hicks"
+date: "August 2018"
+output: pdf_document
+---
+
+# Results - Latest
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+# setting up library's and parameters
+suppressPackageStartupMessages(library(plyr))
+
+# Column names must be in the following sequence
+col_names <- c('period','room','year.level','number.of.students','lesson.time','direct.instruction','discussing','reading..viewing','groupwork','independent.work','LI.visible','SC.visible','learning.understanding','success.understanding','date','learning.process')
+
+# Need to add new walkthrough data to All.Walkthroughs.csv before running this
+
+wtd <- read.csv("data/All.Walkthroughs.csv")
+wtd$date <- as.Date(wtd$date)
+names(wtd) <- col_names
+
+wtd_today <- wtd[wtd$date == max(wtd$date),]
+```
+
+## Context
+
+``` {r echo = FALSE}
+context <- data.frame(Observations = c("Classes visited:", 
+                                       " - beginning of lesson", 
+                                       " - middle of lesson", " - end of lesson", 
+                                       "Students observed:", 
+                                       " - Primary", 
+                                       " - Secondary"),
+                      Today = c(length(wtd_today[,1]), 
+                                sum(wtd_today$lesson.time == "B"), 
+                                sum(wtd_today$lesson.time == "M"), 
+                                sum(wtd_today$lesson.time == "E"), 
+                                sum(wtd_today$number.of.students), 
+                                sum(wtd_today$number.of.students) - sum(subset(wtd_today, 
+                                                                            wtd_today$year.level %in% c(7,8,9,10,11,12))$number.of.students), 
+                                sum(subset(wtd_today, wtd_today$year.level %in% c(7,8,9,10,11,12))$number.of.students)),
+                      Cumulative = c(length(wtd[,1]), 
+                                sum(wtd$lesson.time == "B"), 
+                                sum(wtd$lesson.time == "M"), 
+                                sum(wtd$lesson.time == "E"), 
+                                sum(wtd$number.of.students), 
+                                sum(wtd$number.of.students) - sum(subset(wtd, 
+                                                                            wtd$year.level %in% c(7,8,9,10,11,12))$number.of.students), 
+                                sum(subset(wtd, wtd_today$year.level %in% c(7,8,9,10,11,12))$number.of.students))
+)
+
+knitr::kable(context)
+```
+
+
+## Student activity
+
+### Overall activity breakdown
+``` {r echo = FALSE, results = "asis", comment = NA}
+# Overall activity breakdown
+rd1 <- data.frame(Activity = names(wtd_today[6:10]), Rate = sapply(wtd_today[6:10], mean))
+rd1$Activity <- gsub("reading..viewing","reading or viewing",rd1$Activity)
+rd1$Activity <- gsub("\\."," ",rd1$Activity)
+rd1 <- rd1[order(rd1$Activity),]
+
+```
+
+
+
+### Activity breakdown by time of lesson
+``` {r echo = FALSE, results = "asis", comment = NA}
+# Activity breakdown on time of lesson
+bdat <- subset(wtd_today, wtd_today$lesson.time == "B", select = 6:10)
+bmean <- data.frame(lesson.time = "Beginning", lapply(bdat, mean))
+mdat <- subset(wtd_today, wtd_today$lesson.time == "M", select = 6:10)
+mmean <- data.frame(lesson.time = "Middle", lapply(mdat, mean))
+edat <- subset(wtd_today, wtd_today$lesson.time == "E", select = 6:10)
+emean <- data.frame(lesson.time = "End", lapply(edat, mean))
+
+bdat <- data.frame(lesson.time = "Beginning",
+                   Activity = names(bmean[2:6]),
+                   Rate = as.numeric(bmean[1,2:6])
+)
+mdat <- data.frame(lesson.time = "Middle",
+                   Activity = names(mmean[2:6]),
+                   Rate = as.numeric(mmean[1,2:6])
+)
+edat <- data.frame(lesson.time = "End",
+                   Activity = names(emean[2:6]),
+                   Rate = as.numeric(emean[1,2:6])
+)
+
+temp <- merge(bdat,mdat, all = TRUE)
+lt.split.act <- merge(temp,edat, all = TRUE)
+lt.split.act$Activity <- gsub("reading..viewing","reading or viewing",lt.split.act$Activity)
+lt.split.act$Activity <- gsub("\\."," ",lt.split.act$Activity)
+
+```
+
+
+
+# Results - Cumulative
+
+## Student activity
+
+### Overall activity breakdown
+``` {r echo = FALSE, results = "asis", comment = NA}
+# Overall activity breakdown
+rd1 <- data.frame(Activity = names(wtd[6:10]), Rate = sapply(wtd[6:10], mean))
+rd1$Activity <- gsub("reading..viewing","reading or viewing",rd1$Activity)
+rd1$Activity <- gsub("\\."," ",rd1$Activity)
+rd1 <- rd1[order(rd1$Activity),]
+
+```
+
+
+
+### Activity breakdown by time of lesson
+``` {r echo = FALSE, results = "asis", comment = NA}
+# Activity breakdown on time of lesson
+suppressPackageStartupMessages(library(rCharts))
+
+bdat <- subset(wtd, wtd$lesson.time == "B", select = 6:10)
+bmean <- data.frame(lesson.time = "Beginning", lapply(bdat, mean))
+mdat <- subset(wtd, wtd$lesson.time == "M", select = 6:10)
+mmean <- data.frame(lesson.time = "Middle", lapply(mdat, mean))
+edat <- subset(wtd, wtd$lesson.time == "E", select = 6:10)
+emean <- data.frame(lesson.time = "End", lapply(edat, mean))
+
+bdat <- data.frame(lesson.time = "Beginning",
+                   Activity = names(bmean[2:6]),
+                   Rate = as.numeric(bmean[1,2:6])
+)
+mdat <- data.frame(lesson.time = "Middle",
+                   Activity = names(mmean[2:6]),
+                   Rate = as.numeric(mmean[1,2:6])
+)
+edat <- data.frame(lesson.time = "End",
+                   Activity = names(emean[2:6]),
+                   Rate = as.numeric(emean[1,2:6])
+)
+
+temp <- merge(bdat,mdat, all = TRUE)
+lt.split.act <- merge(temp,edat, all = TRUE)
+lt.split.act$Activity <- gsub("reading..viewing","reading or viewing",lt.split.act$Activity)
+lt.split.act$Activity <- gsub("\\."," ",lt.split.act$Activity)
+
+```
+
+## Student understanding of learning process
+
+The following charts address the questions asked to students, gauging their understanding of the learning process. The scores have been converted to a percentage.
+
+
+``` {r echo = F, warning = F}
+suppressPackageStartupMessages(library(plyr))
+timeSeries <- ddply(wtd, ~date, summarise,
+                    LI = mean(LI.visible),
+                    SC = mean(SC.visible),
+                    Learning.Understanding = mean(learning.understanding, na.rm = T),
+                    Success.Understanding = mean(success.understanding, na.rm = T),
+                    Learning.Process = mean(learning.process, na.rm = T))
+timeSeries$date <- as.Date(timeSeries$date, "%Y-%m-%d")
+
+# transforming data for charting
+t.LI <- data.frame(date = timeSeries$date,
+                 Measure = "LI Visible",
+                 value = timeSeries$LI)
+t.SC <- data.frame(date = timeSeries$date,
+                 Measure = "SC Visible",
+                 value = timeSeries$SC)
+t.LU <- data.frame(date = timeSeries$date,
+                 Measure = "Learning Understood",
+                 value = timeSeries$Learning.Understanding/2)
+t.SU <- data.frame(date = timeSeries$date,
+                 Measure = "Success Understood",
+                 value = timeSeries$Success.Understanding/2)
+t.LP <- data.frame(date = timeSeries$date,
+                   Measure = "Learning Process",
+                   value = timeSeries$Learning.Process/3)
+t1 <- rbind(t.LI, t.SC)
+t2 <- rbind(t.LU, t.SU)
+t <- rbind(t1, t2)
+t <- rbind(t, t.LP)
+
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(scales))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(ggthemes))
+ggtime <- ggplot(t, aes(y = value, x = date, color = Measure)) + geom_line() + geom_point()
+ggtime <- ggtime + scale_y_continuous(name = "",labels = percent, limits = c(0,1)) + scale_x_date(name = "", labels = date_format("%b-%y"))
+ggtime <- ggtime + theme_tufte()
+ggtime
+```
+
+
+# Methodology
+
+Walkthroughs conducted from early 2016 to `r Sys.Date()`. The following data was collected from each class:
+
+### Context of Lesson
+
+Question | Description / Method
+--------|-----------------------------
+period | The period of the lesson visited (1 - 6)
+room | Room visited
+year level | The year level visited. An answer of "3.5" indicates a mixed class of year 3 and year 4 students
+number of students | how many students in the class
+lesson time | The time of the lesson, designated as beginning (B), middle (M) or end (E). Beginning was deemed to be anytime in the first 15 minutes (allowing for movement to class) and end was anytime during the last 10 minutes
+
+### Student Activity - What the students were doing
+
+These categories are *not* exclusive. Students could be doing a number of these at once. For instance class discussion with heavy scaffolding from the teacher might be classed as *direct instruction* as well as *discussion*.
+
+Question | Description / Method
+--------|-----------------------------
+direct instruction | Students were recieving direct instruction from the teacher, or the teacher was modelling work, or similar.
+discussing | Students were talking *about what they were learning* or working on.
+reading / viewing | Students were reading a text, viewing media, or similar. This also includes listening to a recording.
+groupwork | Students were working on a task in groups of two or more. 
+independent work | Students were working on a task by themselves. 
+
+### Learning Intentions and Success Criteria
+
+Question | Description / Method
+--------|-----------------------------
+LI visible | The learning intentions are visible, either on the board, on a document, or online. If online students needed to be able to access / have accessed it.
+SC visible | The success criteria are visible, either on the board, on a document, or online. If online students needed to be able to access / have accessed it.
+
+### Student understanding of learning process - 2016 to 2018 Term 2
+
+**Important: This measure changed in Term 3 2018. Please see next section for how the metric was adjusted.**
+
+This is both the most subjective and important measure of the walkthrough. As such each question was asked to at least 4 students, 2 each for the staff performing the walkthrough. After exiting the class, a short discussion would rate the responses on a scale of 0 - 2, 2 being a *good understanding*, 1 being *some idea*, and 0 being *struggling to understand*. The exact questions would change depending on the student, year level, content, but the goal was to get students to explain what they are learning, and what success in this process would look like. Being a small school it is helpful knowing the students and this was taken into account when evaluating the student responses.
+
+Question | Description / Method
+--------|-----------------------------
+learning understanding | Questions such as *what are you learning today?* were asked, and students prompted to explain what they were learning about. Scored on a scale of 0 - 2.
+success understanding | Questions such as *how do you know when you understand it?* or *what do you hope to get out of the lesson?* were asked. The aim was to prompt students into explaining how successful understanding would be achieved. Scored on a scale of 0 - 2. 
+
+### Student understanding of learning process - 2018 Term 3 Onwards
+
+Students are assessed on how well they understand the following stages in their current learning process:
+
+1. What am I doing?
+2. How am I going? (Feedback)
+3. How do I improve? (Feedforward)
+
+Teachers conducting the survey ask 2 students (minimum) in each class and score the class on a 3-point scale. Decimals are allowed and each of the stages above are given equal value of 1-point each. The kind of questions asked depend on the lesson and age of students but a rough guide is as follows:
+
+1. *What are you doing?* Does the student know what they are doing.
+2. *How are you going? How do you know that? What demonstrates this?* Can the student self-assess on their level of understanding. The follow up question in brackets is to get students to answer more than ‘good’, they need to be able to say how they know how they are going
+3. *What do you need to do to improve? What is your learning goal? What do you need to focus on?* Trying to ascertain if the student knows how to improve. This answer should be more specific than work harder or do more of this.

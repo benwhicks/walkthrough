@@ -1,7 +1,7 @@
 ---
 title: "Walkthough Analysis - Cumulative"
 author: "Ben Hicks"
-date: "28 July 2016"
+date: "17 November 2016"
 output: html_document
 ---
 
@@ -62,7 +62,7 @@ d1 <- data.frame(read.csv("Walkthrough.2016.06.08.csv"),
                  Date = "2016-06-08")
 d2 <- data.frame(read.csv("Walkthrough.2016.07.28.csv"),
                  Date = "2016-07-28")
-d3 <- data.frame(read.csv("Walkthrough.2016.07.28.csv"), 
+d3 <- data.frame(read.csv("Walkthrough.2016.11.17.csv"), 
                  Date = "2016-11-17")
 
 # merging data
@@ -111,7 +111,6 @@ p2$templates$script <- "http://timelyportfolio.github.io/rCharts_nvd3_templates/
 p2$set(title = "Activity breakdown")
 p2$yAxis(tickFormat = "#!d3.format('%')!#")
 p2$print('iframe1',include_assets = TRUE)
-
 ```
 
 \n
@@ -191,7 +190,7 @@ p$print()
 
 \n
 
-For some reason the scale is not working on this graph (sorry!). The horizontal axis starts in Feb 2016 and finishing Jul 2016.
+For some reason the scale is not working on this graph (sorry!). The horizontal axis starts in Feb 2016 and finishing Nov 2016.
 
 \n
 
