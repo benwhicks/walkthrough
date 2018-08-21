@@ -1,8 +1,11 @@
 *.pd
-!Sample.Report.pdff
+!Sample.Report.pdf
 *.csv
 !Sample.All.Walkthroughs.csv
 *.html
 *.doc
 *.docx
 .Rproj.user
+.Rhistory
+.RData
+.Ruserdata
