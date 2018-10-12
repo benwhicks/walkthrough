@@ -6,7 +6,7 @@ output: html_document
 
 Date: `r Sys.Date()`
 
-This document is an informal collection of some of the details of the walkthroughs to date. 
+This document is an informal collection of some of the details of the walkthroughs to date.
 
 
 ```{r echo=FALSE} 
